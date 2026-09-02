@@ -173,11 +173,25 @@ export const anchorTo = eModifier<Signature>(
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     const cleanup = autoUpdate(referenceElement, floatingElement, update);
 
+    const win = window as typeof window & { anchorToInstallCount?: number };
+
+    win.anchorToInstallCount = (win.anchorToInstallCount ?? 0) + 1;
+
+    // eslint-disable-next-line no-console
+    console.log('installed anchorTo', win.anchorToInstallCount);
+
     /**
      * in the function-modifier manager, teardown of the previous modifier
      * occurs before setup of the next
      * https://github.com/ember-modifier/ember-modifier/blob/main/ember-modifier/src/-private/function-based/modifier-manager.ts#L58
      */
-    return cleanup;
+    return () => {
+      win.anchorToInstallCount = (win.anchorToInstallCount ?? 0) - 1;
+
+      // eslint-disable-next-line no-console
+      console.log('uninstalling anchorTo', win.anchorToInstallCount);
+
+      cleanup();
+    };
   }
 );
